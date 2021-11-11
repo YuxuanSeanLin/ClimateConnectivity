@@ -95,23 +95,68 @@ for Id in range(1, 65):
 ## ================================
 # project MPAs
 # convert GCS to PGS
-# Mollweide equal-area projection: zonal statistics 
+# Mollweide equal-area projection 
 
     
-out_mpa = r'D:\Users\Yuxuan Lin\Documents\LocalFiles\XMU\Connectivity\MPA\proj_MPA_intersect'
-out_grid = r'D:\Users\Yuxuan Lin\Documents\LocalFiles\XMU\Connectivity\MPA\proj_seascape_units'
-
-env.workspace = r'D:\Users\Yuxuan Lin\Documents\LocalFiles\XMU\Connectivity\MPA'
+out_mpa = '%s/proj_MPA_intersect' % wd   # folder to restore projected MPAs
+out_grid = '%s/proj_seascape_units' % wd   # folder to restore projected 1-deg units
 
 for Id in range(1, 65):
-    in_mpa = 'MPA_intersect/MPA_intersect_%s.shp' % Id
-    in_grid = 'Seascape_units/Grid_%s.shp' % Id
+    in_mpa = '%s/MPA_intersect/MPA_intersect_%s.shp' % (wd, Id)
+    in_grid = '%s/Seascape_units/Grid_%s.shp' % (wd, Id)
+    
     # MPA projection
     arcpy.Project_management(in_dataset=in_mpa, out_dataset="%s/proj_mpa_%s.shp" % (out_mpa, Id), 
-    out_coor_system="PROJCS['WGS_1984_Mollweide',GEOGCS['GCS_WGS_1984',DATUM['D_unknown',SPHEROID['WGS84',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Mollweide'],PARAMETER['False_Easting',0.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',0.0],UNIT['Meter',1.0]]")
+    out_coor_system="PROJCS['WGS_1984_Mollweide',
+                             GEOGCS['GCS_WGS_1984',DATUM['D_unknown',SPHEROID['WGS84',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],
+                             PROJECTION['Mollweide'],PARAMETER['False_Easting',0.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',0.0],UNIT['Meter',1.0]]")
 
     # grid projection
     arcpy.Project_management(in_dataset=in_grid, out_dataset="%s/proj_grid_%s.shp" % (out_grid, Id), 
-    out_coor_system="PROJCS['WGS_1984_Mollweide',GEOGCS['GCS_WGS_1984',DATUM['D_unknown',SPHEROID['WGS84',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Mollweide'],PARAMETER['False_Easting',0.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',0.0],UNIT['Meter',1.0]]")
+    out_coor_system="PROJCS['WGS_1984_Mollweide',
+                             GEOGCS['GCS_WGS_1984',DATUM['D_unknown',SPHEROID['WGS84',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],
+                             PROJECTION['Mollweide'],PARAMETER['False_Easting',0.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',0.0],UNIT['Meter',1.0]]")
+    print('%s complete' % Id)
+                             
+                             
+                               
+## ================================
+## ================================
+# calculate MPAs overlap area with units                          
+
+for Id in range(1, 65):
+    in_mpa = '%s/proj_MPA_intersect/proj_mpa_%s.shp' % (wd, Id)
+    in_grid = "%s/proj_seascape_units/proj_grid_%s.shp" % (wd, Id)
+    # add field
+    arcpy.AddField_management(in_table=in_mpa, field_name="area", field_type="DOUBLE")
+    arcpy.AddField_management(in_table=in_grid, field_name="area", field_type="DOUBLE")
+
+    # calculate geometry
+    arcpy.management.CalculateGeometryAttributes(in_mpa, [["area", "AREA"]], '', "SQUARE_KILOMETERS", None, "SAME_AS_INPUT")    # overlap area
+    arcpy.management.CalculateGeometryAttributes(in_grid, [["area", "AREA"]], '', "SQUARE_KILOMETERS", None, "SAME_AS_INPUT")    # total area
 
     print('%s complete' % Id)
+
+                             
+                             
+## ================================
+## ================================
+# calculate overlap ratio                         
+
+for Id in range(1, 65):
+    in_mpa = '%s/proj_MPA_intersect/proj_mpa_%s.shp' % (wd, Id)
+    in_grid = "%s/proj_seascape_units/proj_grid_%s.shp" % (wd, Id)
+
+    # join field
+    arcpy.JoinField_management(in_data=in_grid, in_field="num", join_table=in_mpa, join_field="num", fields="area")
+
+    # add field
+    arcpy.AddField_management(in_table=in_grid, field_name="ratio", field_type="DOUBLE")
+
+    # calculate ratio
+    arcpy.CalculateField_management(in_table=in_grid, field="ratio", expression="!area_1! / !area!", expression_type="PYTHON_9.3")
+
+    print('%s complete' % Id)
+                             
+                             
+                             
