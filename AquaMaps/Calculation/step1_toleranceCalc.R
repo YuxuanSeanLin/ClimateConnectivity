@@ -29,7 +29,7 @@ tolerance <- c()
 interval <- c()
 
 # load species dataset
-spelist <- read.csv('Species_list.csv')
+spelist <- read.csv('species.csv')
 row.names(spelist) <- spelist$name
 
 # load env dataset
