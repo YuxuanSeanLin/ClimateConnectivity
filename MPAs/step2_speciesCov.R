@@ -1,17 +1,16 @@
 library(raster)
 library(magrittr)
 
-setwd('D:/Users/Yuxuan Lin/Documents/LocalFiles/XMU/Connectivity/AquaMaps')
+setwd('')
+from_dir <- ''
+to_dir <- ''
 
 pcm <- raster('mpa_cover.tif')
 cov_arr <- c()
 
-# depth <- c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')
-depth <- c('surface')
-for (d in depth){
-  for (phy in list.files(paste0('SpeciesDistribution/',d))){
-    for (f in list.files(paste0('SpeciesDistribution/',d,'/',phy), 
-                         full.names = T)){
+for (d in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
+  for (phy in list.files(paste0(from_dir,'/',d))){
+    for (f in list.files(paste0(from_dir,'/',d,'/',phy), full.names = T)){
       r <- raster(f)
       fname <- strsplit(strsplit(f, '.tif$')[[1]], '/')[[1]][4]
       
@@ -21,15 +20,16 @@ for (d in depth){
       sum_cell <- sum(values(r), na.rm=T)
       cov <- sum_cov / sum_cell
       
-      # create array
+      # save results
       cov_arr <- rbind(cov_arr, cbind(depth=d, phylum=phy, 
                                       species=fname, coverage=cov))
       
     }
     print(paste0(phy, ' - complete'))
   }
+  # export
   as.data.frame(cov_arr) %>% 
-    write.csv(., paste0('mpa_cover/species_cov/cov_',d,'.csv'))
+    write.csv(., paste0(to_dir,'/cov_',d,'.csv'))
 }
 
 
