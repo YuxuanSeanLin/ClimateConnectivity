@@ -6,6 +6,7 @@ library(sf)
 # ==============================
 # average all among depth layers
 
+
 levmean <- function(x){mean(x,na.rm = T)}
 
 setwd('')
@@ -39,8 +40,10 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
 }
 
 
+
 # ==============================
 # average all among GCMs
+
 
 modelmean <- function(dt, output_path){
   newdt <- c()
@@ -82,6 +85,7 @@ modelmean <- function(dt, output_path){
   
 }
 
+setwd('')
 for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
   from_dir <- paste0("thetao_dmean/", h)
   to_dir <- paste0("thetao_mdmean/", h)
@@ -97,6 +101,51 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
       
     }
     print(paste0(s, ': ', yr, ' complete'))
+  }
+  print(paste0(h, ': complete ----'))
+}
+
+
+
+# ==============================
+# expand extent by 1 degree
+# preprocessing for Moving Window 
+
+
+rs_exp <- function(rs, output_path){
+  dt <- as.data.frame(rs, xy=T) %>%
+    .[complete.cases(.),]
+  colnames(dt)[3] <- "value"
+  
+  # expand data
+  right <- subset(dt, x >= 179.5)
+  left <- subset(dt, x <= -179.5)
+  right$x <- right$x - 360
+  left$x <- left$x + 360
+  newdt <- rbind(dt, left, right)
+  
+  # rasterize
+  rs.sf <- st_as_sf(newdt, coords = c('x','y'), crs=4326)
+  rs.sp <- as(rs.sf, "Spatial") 
+  rs <- raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), 
+               ext = extent(c(-181, 181, -90, 90))) %>%
+    rasterize(rs.sp, ., field='value', fun='first')  
+  writeRaster(rs, output_path) 
+}
+
+setwd('')
+for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
+  from_dir <- paste0("thetao_mdmean/", h)
+  to_dir <- paste0("thetao_expand/", h)
+  for (s in c('ssp126', 'ssp245', 'ssp370', 'ssp585')){
+    files <- list.files(paste0(from_dir,'/',s))
+    for (f in files){
+      output_path <- paste0(to_dir,'/',s,'/',f)
+      input_path <- paste0(from_dir,'/',s,'/',f)
+      raster(input_path) %>%
+        rs_exp(., output_path)
+    }
+    print(paste0(s, ': ', f, ' - complete'))
   }
   print(paste0(h, ': complete ----'))
 }
