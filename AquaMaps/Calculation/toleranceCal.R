@@ -1,14 +1,13 @@
+# calculate historical tolerance (niches)
+
 library(raster)
 library(magrittr)
 
-# # all parameters
-# c('bacc', 'detoc', 'dfe', 'dissic', 'dissoc',
-#   'nh4', 'no3', 'o2', 'ph', 'phyc', 'po4', 'pp',
-#   'si', 'so', 'talk', 'thetao', 'zooc')
-
 
 # set work dictionary
-setwd('D:/Users/Yuxuan Lin/Documents/LocalFiles/XMU/Connectivity/AquaMaps')
+setwd('')
+from_dir <- ''
+to_dir <- ''
 
 # define function
 func <- function(d, env_surf, env_meso, env_bathy, env_abysso){
@@ -25,37 +24,29 @@ func <- function(d, env_surf, env_meso, env_bathy, env_abysso){
 
 
 # initialize
-para <- 'bacc'
-mem <- 'Acanthocephala'
+para <- ''
 tolerance <- c()
 interval <- c()
 
 # load species dataset
-spelist <- read.csv('distribution/historical/Species_list.csv')
+spelist <- read.csv('Species_list.csv')
 row.names(spelist) <- spelist$name
 
 # load env dataset
-env_surf <- list.files(paste0('cmip6_historical/surface/',para), 
+env_surf <- list.files(paste0('cmip6/surface/',para), 
                        pattern = '*tif$', full.names = T) %>% stack()
-env_meso <- list.files(paste0('cmip6_historical/mesopelagic/',para), 
+env_meso <- list.files(paste0('cmip6/mesopelagic/',para), 
                        pattern = '*tif$', full.names = T) %>% stack()
-env_bathy <- list.files(paste0('cmip6_historical/bathypelagic/',para), 
+env_bathy <- list.files(paste0('cmip6/bathypelagic/',para), 
                         pattern = '*tif$', full.names = T) %>% stack()
-env_abysso <- list.files(paste0('cmip6_historical/abyssopelagic/',para), 
+env_abysso <- list.files(paste0('cmip6/abyssopelagic/',para), 
                          pattern = '*tif$', full.names = T) %>% stack()
 
 # main part
 for (spe in spelist$name){
-  
-  # start time
-  t1=proc.time()
-  
   all_layer <- c()
   exist <- spelist[spe,] %>% as.character()
   phy <- exist[2]
-  
-  # identify progress
-  if (mem != phy){print(paste0(mem, ' - complete'))}
   
   # extract not NA
   distri <- colnames(spelist)[which(exist != 'NA')][-c(1,2)]
@@ -63,7 +54,7 @@ for (spe in spelist$name){
   # integrate envs of different distribution layers
   for (d in distri){
     # input species raster
-    r <- raster(paste0('SpeciesDistribution/',d,'/',phy,'/',spe,'.tif'))
+    r <- raster(paste0(from_dir,'/',d,'/',phy,'/',spe,'.tif'))
     # mask rasterstack
     env <- func(d, env_surf, env_meso, env_bathy, env_abysso)
     colnames(env) <- seq.int(1984, 2014)
@@ -94,18 +85,9 @@ for (spe in spelist$name){
     tolerance <- rbind(tolerance, interval)
     interval <- c()
   }
-  
-  # identify
-  mem <- phy
-  
-  # stop time
-  t2=proc.time()
-  t=t2-t1
-  print(paste0(phy,'-',spe,' - time elapsed:',round(t[3][[1]], 4),'second'))
-
 }
 
 # export csv
 as.data.frame(tolerance) %>% 
-  write.csv(., paste0('tolerance/',para,'.csv'))
+  write.csv(., paste0(to_dir,'/',para,'.csv'))
 
