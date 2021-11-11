@@ -17,7 +17,7 @@ conda install xarray
 conda install -c oggm salem
 conda install -c conda-forge/label/cf202003 rasterio
 
-# optional mirrors
+# optional mirrors (China)
 conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
 conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
 conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/
