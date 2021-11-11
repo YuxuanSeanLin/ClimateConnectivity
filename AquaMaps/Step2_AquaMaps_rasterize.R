@@ -20,28 +20,22 @@ rasterize_func <- function(dt, fieldv){
 #                vals = 0, resolution = c(0.5, 0.5), ext = extent(c(-180, 180, -90, 90)))
 
 
-setwd("G:/LinYuxuan/AquaMaps")
+setwd('')
+to_dir <- ''
+for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
+  phylums <- list.files(h)
+  for (p in phylums){
+    species <- list.files(paste0(h,'/',p))
+    for (s in species){
+      to_path <- paste0(to_dir,'/',h,'/',p,'/',substring(s,1,nchar(s)-4),'.tif')
+      dt <- paste0(h,'/',p,'/',s) %>% 
+        read.csv(.) %>% subset(., occurrence == 1)
 
-# threshold <- list.files("Threshold_csv") 
-threshold <- c(30, 40)
-
-for (t in threshold){
-  level <- list.files(paste0("Threshold_csv/",t))
-  for (h in level){
-    phylums <- list.files(paste0("Threshold_csv/",t,'/',h))
-    for (p in phylums){
-      species <- list.files(paste0("Threshold_csv/",t,'/',h,'/',p))
-      for (s in species){
-        to_path <- paste0("Threshold_tif/",t,'/',h,'/',p,'/',
-                          substring(s,1,nchar(s)-4),'.tif')
-        dt <- paste0("Threshold_csv/",t,'/',h,'/',p,'/',s) %>% 
-          read.csv(.) %>% subset(., occurrence == 1)
-        
-        if (nrow(dt) > 0){rasterize_func(dt, "occurrence") %>% writeRaster(., to_path)}
-        else{next}
-      }
-      print(paste0(t,' - ',h,' - ',p," - finish"))
+      if (nrow(dt) > 0){rasterize_func(dt, "occurrence") %>% writeRaster(., to_path)}
+      else{next}
     }
+    print(paste0(h,' - ',p," - finish"))
   }
 }
+
 
