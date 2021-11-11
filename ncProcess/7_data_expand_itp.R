@@ -3,6 +3,10 @@ library(raster)
 library(sf)
 
 
+# ==============================
+# average all among depth layers
+
+
 rs_exp <- function(rs, output_path){
   dt <- as.data.frame(rs, xy=T) %>%
     .[complete.cases(.),]
