@@ -20,7 +20,7 @@ func <- function(x,lim_lower,lim_upper){
 # load files
 lower_sd <- read.csv('tolerance/lower_sd.csv')
 upper_sd <- read.csv('tolerance/upper_sd.csv')
-spelist <- read.csv('Species_list.csv')
+spelist <- read.csv('species.csv')
 
 # create parameter list
 paras <- colnames(lower_sd)[-c(1,2)]
