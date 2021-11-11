@@ -8,6 +8,7 @@ from glob import glob
 
 
 wd=''
+to_dir=''
 # list all phyla
 for name in os.listdir("%s/AquaMaps" % wd): 
     os.chdir("%s/%s" % (wd, name))
@@ -55,19 +56,19 @@ for name in os.listdir("%s/AquaMaps" % wd):
         # save by depths
         ## surface
         if int(mind) < 200:
-            path_raw = "%s/surface/%s/%s" % (wd, name, i)
+            path_raw = "%s/surface/%s/%s" % (to_dir, name, i)
             df_raw.to_csv(path_raw, sep=',', index=False, header=True)
         ## meso
         if int(maxd) >= 200:
-            path_raw = "%s/mesopelagic/%s/%s" % (wd, name, i)
+            path_raw = "%s/mesopelagic/%s/%s" % (to_dir, name, i)
             df_raw.to_csv(path_raw, sep=',', index=False, header=True)
         ## bathy
         if int(maxd) >= 1000:
-            path_raw = "%s/bathypelagic/%s/%s" % (wd, name, i)
+            path_raw = "%s/bathypelagic/%s/%s" % (to_dir, name, i)
             df_raw.to_csv(path_raw, sep=',', index=False, header=True)
         ## abysso
         if int(maxd) >= 4000:
-            path_raw = "%s/abyssopelagic/%s/%s" % (wd, name, i)
+            path_raw = "%s/abyssopelagic/%s/%s" % (to_dir, name, i)
             df_raw.to_csv(path_raw, sep=',', index=False, header=True)
         
   
