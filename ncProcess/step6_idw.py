@@ -18,5 +18,3 @@ for depth in ['surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic']:
 
         print("%s: %s --- complete" % (depth, scen))
 
-
-
