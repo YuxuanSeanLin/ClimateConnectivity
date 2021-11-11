@@ -1,4 +1,4 @@
-# processed by Climate Data Operator
+# Processed by Climate Data Operator (https://code.mpimet.mpg.de/projects/cdo)
 # GFDL-ESM4 example
 
 cd /mnt/hgfs/cmip6/data/thetao_add
