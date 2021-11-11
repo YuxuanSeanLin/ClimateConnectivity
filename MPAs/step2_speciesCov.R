@@ -61,12 +61,12 @@ spelist <- left_join(spelist, abyssopelagic, by= "species")
 spelist <- spelist[,-c(3,4,5,7,8,9,11,12,13,15,16,17)]
 colnames(spelist)[3:6] <- c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')
 
-# calculate mean coverage and standard deviation
-spelist <- cbind(spelist, Mean=0, Sd=0)
-for (i in 1:nrow(spelist)){
-  compare[i,7] <- compare[i,3:6] %>% as.numeric() %>% mean(., na.rm = T)
-  compare[i,8] <- compare[i,3:6] %>% as.numeric() %>% sd(., na.rm = T)
-}
+# # calculate mean coverage and standard deviation
+# spelist <- cbind(spelist, Mean=0, Sd=0)
+# for (i in 1:nrow(spelist)){
+#   compare[i,7] <- compare[i,3:6] %>% as.numeric() %>% mean(., na.rm = T)
+#   compare[i,8] <- compare[i,3:6] %>% as.numeric() %>% sd(., na.rm = T)
+# }
 
 # export results
 write.csv(spelist, 'mpa_cover/species_cov/cov_leftjoin.csv', row.names = F)
