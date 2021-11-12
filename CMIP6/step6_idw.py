@@ -13,7 +13,7 @@ for depth in ['surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic']:
             name = f.split('.shp')[0]
             to_path = "%s/thetao_idw/%s/%s/%s.tif" % (wd, depth, scen, name)
 
-            with arcpy.EnvManager(mask="bathymetry/%s.tif" % depth, extent="-180 -90 180 90"):
+            with arcpy.EnvManager(mask="%s/bathymetry/%s.tif" % (wd, depth), extent="-180 -90 180 90"):
                 arcpy.gp.Idw_sa(f, "value", to_path, "1", "3", "VARIABLE 12", "")
 
         print("%s: %s --- complete" % (depth, scen))
