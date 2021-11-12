@@ -144,8 +144,8 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
       input_path <- paste0(from_dir,'/',s,'/',f)
       raster(input_path) %>%
         rs_exp(., output_path)
+      print(paste0(s, ': ', f, ' - complete'))
     }
-    print(paste0(s, ': ', f, ' - complete'))
   }
   print(paste0(h, ': complete ----'))
 }
