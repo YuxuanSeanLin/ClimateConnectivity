@@ -17,7 +17,7 @@ for depth in ['surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic']:
                                                       "Rectangle 3 3 CELL", "MEAN"); 
                 out_raster.save("%s/%s" % (to_path, f))
             print("%s finish" % f)
-        print("======== %s - %s - %s : complete ========" % (depth, scen))
+        print("======== %s - %s: complete ========" % (depth, scen))
 
         
         
