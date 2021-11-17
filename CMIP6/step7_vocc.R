@@ -7,7 +7,18 @@ setwd('')
 
 for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
   for (s in c('ssp126', 'ssp245', 'ssp370', 'ssp585')){
-    rs <- list.files(paste0('future/',h,'/',s), full.names = T) %>% stack(.)
+    # select by period
+    list <- c()
+    for (ls in list.files(paste0('future/',h,'/',s), full.names = T)){
+      for (yr in seq(2020,2100)){
+        if (grepl(yr, ls) == TRUE){
+          list <- append(list, ls)
+        }
+      }
+    }
+    
+    # import raster stack
+    rs <- stack(list)
     
     # calculate climate velocity
     vt <- tempTrend(rs, th = 20)
