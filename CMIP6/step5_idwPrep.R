@@ -19,7 +19,7 @@ rs_exp <- function(rs, output_path){
   newdt <- rbind(dt, left, right)
   
   # convert to point
-  rs.sf <- st_as_sf(dt, coords = c('x','y'), crs=4326)
+  rs.sf <- st_as_sf(newdt, coords = c('x','y'), crs=4326)
   st_write(rs.sf, output_path)
 }
 
