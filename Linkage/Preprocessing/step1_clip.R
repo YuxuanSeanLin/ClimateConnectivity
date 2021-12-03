@@ -1,12 +1,12 @@
 library(raster)
 library(magrittr)
 
+setwd('')
 
-setwd('D:/Users/Yuxuan Lin/Documents/LocalFiles/XMU/Connectivity/Linkage')
-
-# temperature  # resistance
+# clip by hemisphere in preparation for equidistant projection
+# set resistance as example
 for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
-  for (f in list.files(paste0('resistance/resist_scales/scale_100/',h), full.names = T, recursive = T)){
+  for (f in list.files(paste0('resistance/',h), full.names = T, recursive = T)){
     rs <- raster(f)
     fname <- names(rs)
     # northern
