@@ -4,8 +4,10 @@ library(magrittr)
 
 setwd('')
 
+#####
 # reclassification of HI/CI/temperature
 # set HI as an example
+
 files <- list.files('hi', recursive = T, full.names = T)
 for (f in files){
   
@@ -38,6 +40,39 @@ for (f in files){
     rasterize(rs.sp, ., field='rank', fun='first')
   writeRaster(rs, '', overwrite=T)
 
+}
+
+
+
+#####
+# divide patches by overlapping all three reclassified rasters
+
+for (depth in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
+  for (scen in c('present','ssp126','ssp245','ssp370','ssp585')){
+    if (scen == 'present'){
+      # for present data
+      ## import reclassified data
+      T_r <- raster(paste0('temp_reclass/',depth,'/temp_',depth,'_present_reclass.tif'))
+      HI_r <- raster(paste0('hi_reclass/',depth,'/hi_',depth,'_present_reclass.tif'))
+      CI_r <- raster(paste0('ci_reclass/',depth,'/ci_',depth,'_present_reclass.tif'))
+      ## overlap the three (at three different digits)
+      patch_r <- T_r * 100 + CI_r * 10 + HI_r
+      ## output raster
+      writeRaster(patch_r, '')
+    }else{
+      # for future data
+      for (yr in c(2030,2040,2050)){
+        ## import reclassified data
+        T_r <- raster(paste0('temp_reclass/',depth,'/',scen,'/temp_',depth,'_',scen,'_',yr,'.tif'))
+        HI_r <- raster(paste0('hi_reclass/',depth,'/',scen,'/hi_',depth,'_',scen,'_',yr,'.tif'))
+        CI_r <- raster(paste0('ci_reclass/',depth,'/',scen,'/ci_',depth,'_',scen,'_',yr,'.tif'))
+        ## overlap the three (at three different digits)
+        patch_r <- T_r * 100 + CI_r * 10 + HI_r
+        ## output raster
+        writeRaster(patch_r, '')
+      }
+    }
+  }
 }
 
 
