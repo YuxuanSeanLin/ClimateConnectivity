@@ -1,8 +1,12 @@
 library(raster)
 
+######
+# rescale HI to 1-100 to create resistance layer
+
 setwd('')
+
 for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
-  files <- list.files(paste0('hi_regression/',h), full.names = T, pattern = '*.tif$', recursive = T)
+  files <- list.files(paste0('hi_pred/',h), full.names = T, pattern = '*.tif$', recursive = T)
   for (f in files){
     rs <- raster(f)
     
