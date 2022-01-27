@@ -4,11 +4,9 @@
 library(sf)
 library(raster)
 library(magrittr)
-# library(ggplot2)
 library(VoCC)
 
-
-setwd('D:/LinkageMapper/Statistics/vocc')
+setwd('')
 
 #####
 # calculate gradient-based velocity
@@ -27,7 +25,7 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
     
     # start from different years
     for (yr in seq(2020, 2050, 10)){
-      # select by period
+      # select by period (20x0~2099, decadal intervals)
       for (y in seq(yr-30,yr-1)){list <- list[which(grepl(y, list) == FALSE)]}
       
       # import raster stack
