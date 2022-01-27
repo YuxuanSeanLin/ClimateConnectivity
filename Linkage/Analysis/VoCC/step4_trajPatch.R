@@ -2,7 +2,10 @@ library(sf)
 library(raster)
 library(magrittr)
 
-setwd('D:/LinkageMapper/Statistics/vocc')
+setwd('')
+
+#####
+# generate the trajectory pairs of patches
 
 for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
   for (s in c('ssp126', 'ssp245', 'ssp370', 'ssp585')){
@@ -22,7 +25,6 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
       # load available patch ID (have velocity trajectory)
       traj_all <- st_read(paste0('traj_lines/',h,'/',s,'/traj_',h,'_',s,'_',yr,'.shp'))
       pch_traj <- traj_all$pid    ## available patches
-      
       
       # initialize
       result <- c()
