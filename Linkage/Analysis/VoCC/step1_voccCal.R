@@ -1,6 +1,3 @@
-# install VoCC (Garcia Molinos et al. 2019)
-# devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, force = TRUE)
-
 library(sf)
 library(raster)
 library(magrittr)
