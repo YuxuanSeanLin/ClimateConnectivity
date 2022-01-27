@@ -1,5 +1,5 @@
 # Tutorials
-## Climate Data Operator (shell-Linux)
+## Climate Data Operator (shell-Linux, e.g., Ubuntu)
 ```shell
 sudo apt-get update -y
 sudo apt-get install libnetcdf-dev libnetcdff-dev 
