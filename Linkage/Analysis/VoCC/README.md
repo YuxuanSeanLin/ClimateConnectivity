@@ -1,4 +1,4 @@
-# Principles of Climate velocity
+# Principles of climate velocity
 Climate velocity is a proxy that track the speed and direction of isothermal movement.
 
 See details on [Burrows et al. 2011](https://www.sciencemag.org/lookup/doi/10.1126/science.1210288), [Brito-Morales et al. 2018](https://linkinghub.elsevier.com/retrieve/pii/S0169534718300636).
