@@ -5,7 +5,7 @@ See details on [Burrows et al. 2011](https://www.sciencemag.org/lookup/doi/10.11
 
 # VoCC package (in R)
 VoCC is a R-based tool that could calculate gradient-based velocity and trajectory.
-See details on [Garcia Molinos et al. 2019](https://onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13295)
+See details on [Garcia Molinos et al. 2019](https://onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13295).
 ```R
 # Installation from GitHub
 devtools::install_github("JorGarMol/VoCC", dependencies = TRUE, force = TRUE)
