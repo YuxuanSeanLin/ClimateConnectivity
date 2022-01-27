@@ -1,12 +1,13 @@
 library(sf)
 library(raster)
 library(magrittr)
-# library(ggplot2)
 library(VoCC)
 library(dplyr)
 
-setwd('D:/LinkageMapper/Statistics/vocc')
+setwd('')
 
+#####
+# climate trajectory with velocity
 
 for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
   for (s in c('ssp126', 'ssp245', 'ssp370', 'ssp585')){
@@ -46,7 +47,7 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
       # calculate mean temperature
       mn <- mean(rs, na.rm = T)
       
-      # extract x-y points
+      # extract x-y points of all cells
       lonlat <- patchid
       row.names(lonlat) <- seq(1,nrow(lonlat))
       lonlat <- lonlat[,-3]
@@ -56,24 +57,23 @@ for (h in c('surface', 'mesopelagic', 'bathypelagic', 'abyssopelagic')){
       lonlat <- lonlat[complete.cases(lonlat),]
       
       # velocity trajectory
+      # time span: 20x0~2099, decadal intervals
       traj <- voccTraj(lonlat, vel, ang, mn, tyr = 2100-yr, 
                        trajID = as.numeric(rownames(lonlat)), correct=T)
       traj_lns <- trajLine(x = traj) %>% st_as_sf(.)
       
-      # extract start points and retrieved patch IDs
+      # extract start points and retrieve patch IDs
       xystart <- traj[1:nrow(traj_lns),]
       xystart$pid <- raster::extract(patch, xystart[,1:2])
       
-      # left-join to polyline attribute
+      # left-join to polyline attributes
       traj_lns <- left_join(traj_lns, xystart, by='trajIDs')
       
       for (p in unique(traj_lns$pid)){
         # trajectory lines of each patch
         Pch_traj <- subset(traj_lns, pid==p)
         
-        # export trajectories with patches 
-        ## Error in h(simpleError(msg, call)) : 
-        ## error in evaluating the argument 'x' in selecting a method for function 'addAttrToGeom': invalid class “SpatialLines” object: bbox should never contain infinite values
+        # export trajectories by patches 
         st_write(st_as_sf(Pch_traj), 
                  paste0('traj_lines_bypatch/',h,'/',s,'/',yr,'/traj_',h,'_',s,'_',yr,'_',p,'.shp'))
       }
