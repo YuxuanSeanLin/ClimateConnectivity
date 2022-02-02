@@ -48,18 +48,17 @@ for (hemi in c('N', 'S')){
                          crs='+proj=aeqd +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
     }
     
-    ## rasterize
-    cp.sp <- as(cp_nbh, "Spatial") 
-    newcp <- raster(crs = crs(cp.sp), vals = 0, resolution = c(97300, 111000), 
-                    ext = extent(raster(paste0('topo/',hemi,'_topo/',hemi,'_',depth,'.tif')))) %>%
-      rasterize(cp.sp, ., field='gridcode', fun='first')  
-    
-    ## polygonize
-    cp.poly <- rasterToPolygons(newcp) %>% st_as_sf(.)
-    
-    ## export patches to <step5_patches_hemi_final>
-    to_path <- paste0('step5_patches_hemi_final/',<###>)
-    st_write(cp.poly, to_path)
+    ## export centroids to <step5_centro_hemi>
+    if (length(strsplit(f,'/')[[1]])==4){
+      to_path <- paste0('step5_centro_hemi/',hemi,'_centro/',
+                        depth,'/',hemi,'_centro_',depth,'_present.shp')
+    }else{
+      scen <- strsplit(f,'/')[[1]][4]
+      yr <- strsplit(strsplit(f,'/')[[1]][5],'_')[[1]][5]
+      to_path <- paste0('step5_centro_hemi/',hemi,'_centro/',
+                        depth,'/',scen,'/',hemi,'_centro_',depth,'_',scen,'_',yr,'.shp')
+    }
+    st_write(cp_nbh, to_path)
   }
 }
 
