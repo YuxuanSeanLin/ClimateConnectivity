@@ -12,16 +12,16 @@ weight_sub <- 2/12
 for (year in years){
   for (dp in c("surface","mesopelagic","abyssopelagic","bathypelagic")){
     # list of phyla
-    phys <- list.files(paste0("CI_calculate/raw/",year,"/",dp))
+    phys <- list.files(paste0("raw/",year,"/",dp))
     
     for (phy in phys){
       # list of species
-      spes <- list.files(paste0("CI_calculate/raw/",year,"/",dp,"/",phy), pattern='.tif$)
+      spes <- list.files(paste0("raw/",year,"/",dp,"/",phy), pattern='.tif$)
       
       if (length(spes)>0){  # skip empty folders
         for (spe in spes){
           # climate impacts of each parameters (17 cols)
-          spe_ci <- read.csv(paste0("CI_calculate/raw/",year,"/",dp,"/",phy,"/",spe))
+          spe_ci <- read.csv(paste0("raw/",year,"/",dp,"/",phy,"/",spe))
           
           # calculate weighed sum of climate impacts of each species
           ## major weight (80%, equal intervals): temperature, salinity, dissolved oxygen, pH (5 in total)
@@ -55,7 +55,7 @@ for (year in years){
         ## create constant raster and rasterize from sp; export
         raster(crs = crs(rs.sp), vals = 1, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
           rasterize(rs.sp, ., field='CI_total', fun='first', mask = T) %>% 
-          writeRaster(., paste0("CI_calculate/weight/",year,"/",dp,"/",phy,"/",strsplit(spe,'.csv')[[1]][1],'.tif'))
+          writeRaster(., paste0("weight/",year,"/",dp,"/",phy,"/",strsplit(spe,'.csv')[[1]][1],'.tif'))
         
       }
       print(paste0(dp,"done"))
