@@ -1,5 +1,5 @@
 # Principles of LCP model
-Least-cost Path model dipicts the potential migration between patches (core areas) against <span style="border-bottom:2px dashed yellow;">movement barrier (resistance)</span>, 
+Least-cost Path model dipicts the potential migration between patches (core areas) against movement barrier (resistance), 
 and optimizes pathways where minimized cumulative costs (corridors) could be achieved.
 
 See details on [McRae et al., 2012](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0052604).
