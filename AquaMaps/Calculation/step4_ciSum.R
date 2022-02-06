@@ -7,14 +7,14 @@ for (year in seq(2030,2050,10)){
   
   for (dp in c("surface","mesopelagic","abyssopelagic","bathypelagic")){
     # import seascape boundary
-    mask_r <- raster(paste0("CI_calculate/mask/",dp,'.tif'))
+    mask_r <- raster(paste0("mask/",dp,'.tif'))
     
     # import depth canvas (180*360 raster, value=0)
-    canvas <- raster(paste0("CI_calculate/canvas/",dp,'.tif'))
+    canvas <- raster(paste0("canvas/",dp,'.tif'))
     
-    for (phy in list.files(paste0("CI_calculate/weight/",year,"/",dp))){
+    for (phy in list.files(paste0("weight/",year,"/",dp))){
       # list of all species
-      files <- list.files(paste0("CI_calculate/weight/",year,"/",dp,"/",phy), 
+      files <- list.files(paste0("weight/",year,"/",dp,"/",phy), 
                           pattern = '.tif$', full.names = T)
       
       for (f in files){
@@ -31,7 +31,7 @@ for (year in seq(2030,2050,10)){
     canvas_r <- mask(canvas, mask_r)
     
     # export
-    writeRaster(canvas_r, paste0("CI_calculate/cum_CI/",dp,"/",year,".tif"),overwrite = TRUE)
+    writeRaster(canvas_r, paste0("cum_CI/",dp,"/",year,".tif"),overwrite = TRUE)
     print(paste(exp,"-",year,"-",dp,"Done!",sep = ""))
   }
 }
