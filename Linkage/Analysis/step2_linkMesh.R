@@ -4,8 +4,7 @@ library(raster)
 library(sf)
 library(arcgisbinding)
 
-
-setwd('D:/LinkageMapper')
+setwd('')
 
 # activate ArcGIS lisence
 arc.check_product()
@@ -17,17 +16,18 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
               'ssp370_2030','ssp370_2040','ssp370_2050',
               'ssp585_2030','ssp585_2040','ssp585_2050')){
     
-    #####
+    ##########
     # Step1: load corridors results
     if (s == 'present'){  ## present
       
       ## northern hemisphere
-      arcf <- arc.open(paste0('Output/N_hemisphere/',h,'/',s,'/link_maps.gdb/present_LCPs'))
+      arcf <- arc.open(paste0('N_hemisphere/',h,'/',s,'/link_maps.gdb/present_LCPs'))
       N_link <- arc.select(arcf, fields=c('From_Core','To_Core','CW_Dist','LCP_Length')) %>% 
         as.data.frame(.)
       colnames(N_link)[1:2] <- c('coreId1','coreId2')
+      
       ## southern hemisphere
-      arcf <- arc.open(paste0('Output/S_hemisphere/',h,'/',s,'/link_maps.gdb/present_LCPs'))
+      arcf <- arc.open(paste0('S_hemisphere/',h,'/',s,'/link_maps.gdb/present_LCPs'))
       S_link <- arc.select(arcf, fields=c('From_Core','To_Core','CW_Dist','LCP_Length')) %>% 
         as.data.frame(.)
       colnames(S_link)[1:2] <- c('coreId1','coreId2')
@@ -36,13 +36,14 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       sc <- strsplit(s,'_')[[1]][1]
       
       ## northern hemisphere
-      arcf <- arc.open(paste0('Output/N_hemisphere/',h,'/',sc,'/',s,
+      arcf <- arc.open(paste0('N_hemisphere/',h,'/',sc,'/',s,
                               '/link_maps.gdb/',s,'_LCPs'))
       N_link <- arc.select(arcf, fields=c('From_Core','To_Core','CW_Dist','LCP_Length')) %>% 
         as.data.frame(.)
       colnames(N_link)[1:2] <- c('coreId1','coreId2')
+      
       ## southern hemisphere
-      arcf <- arc.open(paste0('Output/S_hemisphere/',h,'/',sc,'/',s,
+      arcf <- arc.open(paste0('S_hemisphere/',h,'/',sc,'/',s,
                               '/link_maps.gdb/',s,'_LCPs'))
       S_link <- arc.select(arcf, fields=c('From_Core','To_Core','CW_Dist','LCP_Length')) %>% 
         as.data.frame(.)
@@ -52,7 +53,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
     
     
     
-    #####
+    ##########
     # Step2: generate unique linkage of two hemisphere
     ## combine hemispheres and create new linkage table
     linkage <- rbind(N_link, S_link)
@@ -62,6 +63,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       link_ext <- subset(linkage, coreId1==p)
       
       ## extract repeated linkage
+      ## the patch ID is automatically ordered ascendingly by Linkage Mapper
       if (length(unique(link_ext$coreId2)) < length(link_ext$coreId2)){
         for (rep in unique(link_ext$coreId2)){
           ## judge repeated pairs
@@ -83,19 +85,17 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
     
     
     
-    #####
-    # Step3: add disconnected patches to linkage table
+    ##########
+    # Step3: add all patches to linkage table (connected or isolated)
     ## list of all connected patches
     con_pch <- unique(append(link_new$coreId1, link_new$coreId2))
     
     ## list of all patches
     if (s == 'present'){  ## present
-      all_pch <- st_read(paste0('Statistics/patch_elim/',h,
-                                '/patch_',h,'_present_elim.shp')) %>% .$pid
+      all_pch <- st_read(paste0('patch/',h,'/patch_',h,'_present.shp')) %>% .$pid
     }else{  ## future
       sc <- strsplit(s,'_')[[1]][1]
-      all_pch <- st_read(paste0('Statistics/patch_elim/',h,'/',sc,
-                                '/patch_',h,'_',s,'_elim.shp')) %>% .$pid
+      all_pch <- st_read(paste0('patch/',h,'/',sc,'/patch_',h,'_',s,'.shp')) %>% .$pid
     }
     
     ## add all patches connected to themselves, with zero distance
@@ -110,18 +110,16 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
     
 
     
-    #####
+    ##########
     # Step4: mesh linkage by climate trajectory and thermal gradient
     ## load climate trajectory data
     if (s == 'present'){  ## present
       ## load temperature data
-      temp <- read.csv(paste0('Statistics/patch_temp/',h,
-                              '/ptemp_',h,'_present.csv'))
+      temp <- read.csv(paste0('patch_temp/',h,'/ptemp_',h,'_present.csv'))
       
       for (sc in c('ssp126','ssp245','ssp370','ssp585')){
-        ## load velocity trajectory data
-        traj <- read.csv(paste0('Statistics/vocc/traj_patches/',h,'/',sc,
-                                '/traj_',h,'_',sc,'_2020.csv'))
+        ## load velocity trajectory data (see details in 'VoCC' section)
+        traj <- read.csv(paste0('vocc/traj_patches/',h,'/',sc,'/traj_',h,'_',sc,'_2020.csv'))
         
         ## mesh linkage by velocity trajectory
         link_traj <- data.frame()
@@ -173,19 +171,17 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         link_traj_temp <- link_traj_temp[,1:7]
         
         ## export linkage table
-        write.csv(link_traj_temp, paste0('Statistics/linkage_global/',h,'/',sc,
+        write.csv(link_traj_temp, paste0('Output/linkage_global/',h,'/',sc,
                                          '/link_',h,'_',sc,'_2020.csv'), row.names = F)
       }
     }else{  ## future
       sc <- strsplit(s,'_')[[1]][1]
       
       ## load temperature data
-      temp <- read.csv(paste0('Statistics/patch_temp/',h,'/',sc,
-                              '/ptemp_',h,'_',s,'.csv'))
+      temp <- read.csv(paste0('patch_temp/',h,'/',sc,'/ptemp_',h,'_',s,'.csv'))
 
       ## load velocity trajectory data
-      traj <- read.csv(paste0('Statistics/vocc/traj_patches/',h,'/',sc,
-                              '/traj_',h,'_',s,'.csv'))
+      traj <- read.csv(paste0('vocc/traj_patches/',h,'/',sc,'/traj_',h,'_',s,'.csv'))
       
       ## mesh linkage by velocity trajectory
       link_traj <- data.frame()
@@ -237,8 +233,8 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       link_traj_temp <- link_traj_temp[,1:7]
       
       ## export linkage table
-      write.csv(link_traj_temp, paste0('Statistics/linkage_global/',h,'/',sc,
-                                       '/link_',h,'_',sc,'.csv'), row.names = F)
+      write.csv(link_traj_temp, paste0('Output/linkage_global/',h,'/',sc,
+                                       '/link_',h,'_',s,'.csv'), row.names = F)
     }
   }
 }
