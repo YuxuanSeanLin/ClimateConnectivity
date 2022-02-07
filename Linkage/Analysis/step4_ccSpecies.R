@@ -9,14 +9,19 @@ setwd('D:/LinkageMapper/Statistics')
 edge <- read.csv('ClimCon_species/thetao.csv')
 
 # create files
-for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
-  dir.create(paste0('ClimCon_species/Species_ClimCon/',h))
-  dir.create(paste0('ClimCon_species/Species_ClimImp/',h))
-  for (phy in unique(edge$phylum)){
-    dir.create(paste0('ClimCon_species/Species_ClimCon/',h,'/',phy))
-    dir.create(paste0('ClimCon_species/Species_ClimImp/',h,'/',phy))
+for (s in c('ssp126','ssp245','ssp370','ssp585')){
+  dir.create(paste0('ClimCon_species/Species_ClimCon/',s))
+  dir.create(paste0('ClimCon_species/Species_ClimImp/',s))
+  for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
+    dir.create(paste0('ClimCon_species/Species_ClimCon/',s,'/',h))
+    dir.create(paste0('ClimCon_species/Species_ClimImp/',s,'/',h))
+    for (phy in unique(edge$phylum)){
+      dir.create(paste0('ClimCon_species/Species_ClimCon/',s,'/',h,'/',phy))
+      dir.create(paste0('ClimCon_species/Species_ClimImp/',s,'/',h,'/',phy))
+    }
   }
 }
+
 
 #####
 # Step1: calculate climate connectivity and climate impacts of each species
@@ -27,10 +32,11 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   for (spe in spelist){
     ## species data
     spe_location <- raster(spe)
+    spename <- strsplit(strsplit(spe,'/')[[1]][5],'.tif')[[1]][1]
     
     ## tolerance limits
-    low_end <- edge$lower_sd[which(edge$species==names(spe_location))]
-    high_end <- edge$upper_sd[which(edge$species==names(spe_location))]
+    low_end <- edge$lower_sd[which(edge$species==spename)]
+    high_end <- edge$upper_sd[which(edge$species==spename)]
     
     ## load patches (only historical distribution)
     patch <- raster(paste0('patch_id/',h,'/patch_',h,'_present.tif'))
