@@ -9,8 +9,8 @@ for (year in seq(2030,2050,10)){
     # import seascape boundary
     mask_r <- raster(paste0("mask/",dp,'.tif'))
     
-    # import depth canvas (180*360 raster, value=0)
-    canvas <- raster(paste0("canvas/",dp,'.tif'))
+    # import canvas (180*360 raster, value=0)
+    canvas <- raster('canvas.tif')
     
     for (phy in list.files(paste0("weight/",year,"/",dp))){
       # list of all species
