@@ -24,7 +24,7 @@ for (year in years){
           spe_ci <- read.csv(paste0("raw/",year,"/",dp,"/",phy,"/",spe))
           
           # calculate weighed sum of climate impacts of each species
-          ## major weight (80%, equal intervals): temperature, salinity, dissolved oxygen, pH (5 in total)
+          ## major weight (80%, equal intervals): temperature, salinity, dissolved oxygen, pH, primary production (5 in total)
           ## minor weight (20%, equal intervals): the rest parameters (12 in total)
           spe_ci$CI_total <- (spe_ci[,10]*weight_main+
                               spe_ci[,11]*weight_main+
