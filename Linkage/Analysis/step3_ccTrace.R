@@ -14,6 +14,12 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       # load linkage data
       link <- read.csv(paste0('linkage_global/',h,'/',s,'/link_',h,'_',s,'_',yr,'.csv'))
       
+      # create temperature table
+      temp_pre <- cbind(From=link$Origin, From_pre=link$Origin_pre) %>% 
+        unique() %>% as.data.frame()
+      temp_fut <- cbind(To=link$Dest, To_fut=link$Dest_fut) %>% 
+        unique() %>% as.data.frame()
+      
       cc_patch <- c() %>% as.data.frame()
       for (p in unique(link$Origin)){
         #####
@@ -76,12 +82,6 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         #####
         # Step2: calculate climate connectivity
         
-        ## create temperature table
-        temp_pre <- cbind(From=link$Origin, From_pre=link$Origin_pre) %>% 
-          unique() %>% as.data.frame()
-        temp_fut <- cbind(To=link$Dest, To_fut=link$Dest_fut) %>% 
-          unique() %>% as.data.frame()
-        
         ## join present origin temperature to routine table
         route_cc <- route
         route_cc <- left_join(route_cc, temp_pre, by = 'From')
@@ -90,11 +90,19 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         for (c in 2:(steps+1)){
           colnames(route_cc)[c] <- 'To'
           route_cc <- left_join(route_cc, temp_fut, by = 'To')
-          colnames(route_cc)[c(c,(c+steps+1))] <- c(paste0('To_',(c-1)),paste0('ClimCon_',(c-1)))
+          colnames(route_cc)[c(c,(c+steps+1))] <- c(paste0('To_',(c-1)),paste0('To_fut_',(c-1)))
+        }
+        
+        ## export linkage data by patches (only 2020, for species connectivity)
+        if (yr=2020){
+          write.csv(route_cc, 
+                    paste0('ClimCon/',h,'/',s,'/cclink_2020/cclink_',p,'.csv'), 
+                    row.names = F)
         }
         
         ## calculate climate connectivity of each designated end patch
         for (c in (steps+3):ncol(route_cc)){
+          colnames(route_cc)[c] <- paste0('ClimCon_',(c-steps-2))
           for (r in which(is.na(route_cc[,c])==F)){
             route_cc[r,c] <- route_cc$From_pre[r]-route_cc[r,c]
           }
@@ -113,10 +121,23 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         print('----------------')
       }
       
-      # export data
-      write.csv(cc_patch, 
-                paste0('ClimCon/',h,'/ClimCon_',h,'_',s,'_',yr,'.csv'), 
-                row.names = F)
+      # left-join the connectivity results with patch x-y coordinates
+      if (yr='2020'){
+        patch <- raster(paste0('patch_id/',h,'/patch_',h,'_present.tif')) %>% 
+          as.data.frame(., xy=T) %>% .[complete.cases(.),]
+      }else{
+        patch <- raster(paste0('patch_id/',h,'/',s,'/patch_',h,'_',s,'_',yr,'.tif')) %>% 
+          as.data.frame(., xy=T) %>% .[complete.cases(.),]
+      }
+      colnames(patch)[3] <- 'patch'
+      patch <- left_join(patch, cc_patch, by = 'patch')
+      
+      # export as raster files
+      rs.sp <- st_as_sf(patch, coords = c('x','y'), crs=4326) %>% 
+        as(., "Spatial") 
+      raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
+        rasterize(rs.sp, ., field='ClimCon', fun='first') %>% 
+        writeRaster(., paste0('ClimCon/',h,'/',s,'/ClimCon_',h,'_',s,'_',yr,'.tif'), overwrite=T)
 
       print(paste0('----Complete: ',h,'-',s,'-',yr,'----'))
     }
