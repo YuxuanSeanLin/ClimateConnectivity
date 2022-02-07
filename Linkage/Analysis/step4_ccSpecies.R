@@ -32,7 +32,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   for (spe in spelist){
     ## species data
     spe_location <- raster(spe)
-    spename <- strsplit(strsplit(spe,'/')[[1]][5],'.tif')[[1]][1]
+    spename <- strsplit(strsplit(spe,'/')[[1]][5],'.tif$')[[1]][1]
     
     ## tolerance limits
     low_end <- edge$lower_sd[which(edge$species==spename)]
@@ -89,12 +89,12 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
         rasterize(rs.sp, ., field='ClimCon', fun='first') %>% 
         writeRaster(., paste0('ClimCon_species/Species_ClimCon/',s,
-                              strsplit(spe,'SpeciesDistribution')[[1]][2]))
+                              strsplit(spe,'SpeciesDistribution')[[1]][2]), overwrite=T)
       #### climate impacts
       raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
         rasterize(rs.sp, ., field='ClimImp', fun='first') %>% 
         writeRaster(., paste0('ClimCon_species/Species_ClimImp/',s,
-                              strsplit(spe,'SpeciesDistribution')[[1]][2]))
+                              strsplit(spe,'SpeciesDistribution')[[1]][2]), overwrite=T)
       
       print(paste0('----Complete: ',s,'-',strsplit(spe,'/')[[1]][4],
                    '-',strsplit(spe,'/')[[1]][5],'----'))
@@ -145,6 +145,5 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   writeRaster(canvas_ci_r, paste0('Species_ClimImp_total/',h,
                                   '/Tot_ClimImp_',h,'.tif'),overwrite = TRUE)
   
-  print(paste(exp,"-",year,"-",dp,"Done!",sep = ""))
 }
 
