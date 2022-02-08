@@ -3,28 +3,14 @@ library(dplyr)
 library(raster)
 library(sf)
 
-setwd('D:/LinkageMapper/Statistics')
+setwd('root')
 
 # load thermal tolerance edge of each species
 edge <- read.csv('ClimCon_species/thetao.csv')
 
-# create files
-for (s in c('ssp126','ssp245','ssp370','ssp585')){
-  dir.create(paste0('ClimCon_species/Species_ClimCon/',s))
-  dir.create(paste0('ClimCon_species/Species_ClimImp/',s))
-  for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
-    dir.create(paste0('ClimCon_species/Species_ClimCon/',s,'/',h))
-    dir.create(paste0('ClimCon_species/Species_ClimImp/',s,'/',h))
-    for (phy in unique(edge$phylum)){
-      dir.create(paste0('ClimCon_species/Species_ClimCon/',s,'/',h,'/',phy))
-      dir.create(paste0('ClimCon_species/Species_ClimImp/',s,'/',h,'/',phy))
-    }
-  }
-}
-
-
 #####
 # Step1: calculate climate connectivity and climate impacts of each species
+
 for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   spelist <- list.files(paste0('ClimCon_species/SpeciesDistribution/',h), 
                         full.names = T, recursive = T, pattern = '.tif$')
@@ -99,9 +85,6 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       print(paste0('----Complete: ',s,'-',strsplit(spe,'/')[[1]][4],
                    '-',strsplit(spe,'/')[[1]][5],'----'))
     }
-    
-    
-    
   }
 }
 
@@ -109,41 +92,122 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
 
 #####
 # Step2: calculate total climate connectivity and climate impacts
-setwd('D:/LinkageMapper/Statistics/ClimCon_species')
+
+setwd('root/ClimCon_species')
+
+for (s in c('ssp126','ssp245','ssp370','ssp585')){
+  for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
+    ## load seascape boundary
+    mask_r <- raster(paste0('Seascape_boundaries/',h,'.tif'))
+    
+    ## import canvas (180*360 raster, value=0)
+    canvas_cc <- raster('canvas.tif')
+    canvas_ci <- canvas_cc
+    
+    ## list of all species (read recursively)
+    spelist <- list.files(paste0('Species_ClimCon/',s,'/',h), 
+                          full.names = T, recursive = T, pattern = '.tif$')
+    
+    for (spe in spelist){
+      ## load connectivity and CI
+      ClimCon <- raster(spe)
+      ClimImp <- raster(paste0('Species_ClimImp',
+                               strsplit(spe,'Species_ClimCon')[[1]][2]))
+      
+      ## sum all
+      canvas_cc <- sum(canvas_cc, ClimCon, na.rm = T)
+      canvas_ci <- sum(canvas_ci, ClimImp, na.rm = T)
+      
+      print(paste0('----Complete: ',s,'-',strsplit(spe,'/')[[1]][4],
+                   '-',strsplit(spe,'/')[[1]][5],'----'))
+    }
+    
+    ## extract canvas by mask (boundary)
+    canvas_cc_r <- mask(canvas_cc, mask_r)
+    canvas_ci_r <- mask(canvas_ci, mask_r)
+    
+    ## export data
+    writeRaster(canvas_cc_r, paste0('Species_ClimCon_total/',h,
+                                    '/Tot_ClimCon_',h,'_',s,'.tif'),overwrite = TRUE)
+    writeRaster(canvas_ci_r, paste0('Species_ClimImp_total/',h,
+                                    '/Tot_ClimImp_',h,'_',s,'.tif'),overwrite = TRUE)
+    
+    print(paste0('----Complete: ',h,'----'))
+  }
+}
+
+
+
+#####
+# Step3: calculate total richness
 
 for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   ## load seascape boundary
   mask_r <- raster(paste0('Seascape_boundaries/',h,'.tif'))
   
   ## import canvas (180*360 raster, value=0)
-  canvas_cc <- raster('canvas.tif')
-  canvas_ci <- canvas_cc
+  canvas_richness <- raster('canvas.tif')
   
   ## list of all species (read recursively)
-  spelist <- list.files(paste0('Species_ClimCon/',h), 
+  spelist <- list.files(paste0('SpeciesDistribution/',h), 
                         full.names = T, recursive = T, pattern = '.tif$')
   
   for (spe in spelist){
     ## load connectivity and CI
-    ClimCon <- raster(spe)
-    ClimImp <- raster(paste0('Species_ClimImp',
-                             strsplit(spe,'Species_ClimCon')[[1]][1]))
+    species <- raster(spe)
     
     ## sum all
-    canvas_cc <- sum(canvas_cc, ClimCon, na.rm = T)
-    canvas_ci <- sum(canvas_ci, ClimImp, na.rm = T)
+    canvas_richness <- sum(canvas_richness, species, na.rm = T)
     
+    print(paste0('----Complete: ',h,'-',strsplit(spe,'/')[[1]][3],
+                 '-',strsplit(spe,'/')[[1]][4],'----'))
   }
-
+  
   ## extract canvas by mask (boundary)
-  canvas_cc_r <- mask(canvas_cc, mask_r)
-  canvas_ci_r <- mask(canvas_ci, mask_r)
+  canvas_richness_r <- mask(canvas_richness, mask_r)
   
   ## export data
-  writeRaster(canvas_cc_r, paste0('Species_ClimCon_total/',h,
-                                  '/Tot_ClimCon_',h,'.tif'),overwrite = TRUE)
-  writeRaster(canvas_ci_r, paste0('Species_ClimImp_total/',h,
-                                  '/Tot_ClimImp_',h,'.tif'),overwrite = TRUE)
+  writeRaster(canvas_richness_r, paste0('Richness/Richness_',h,'.tif'), overwrite = TRUE)
+  print(paste0('----Complete: ',h,'----'))
   
 }
+
+
+
+#####
+# Step4: calculate mean connectivity (total connectivity / richness)
+
+for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
+  # load species richness
+  richness <- raster(paste0('Richness/Richness_',h,'.tif'))
+  
+  for (s in c('ssp126','ssp245','ssp370','ssp585')){
+    ## load total climate connectivity (of all species)
+    ClimCon <- raster(paste0('Species_ClimCon_total/',h,
+                             '/Tot_ClimCon_',h,'_',s,'.tif'))
+    
+    ## create raster stack
+    MeanClimCon <- stack(ClimCon, richness) %>% 
+      as.data.frame(., xy=T) %>% .[complete.cases(.),]
+    colnames(MeanClimCon)[3:4] <- c('ClimCon', 'richness')
+    
+    ## calculate mean connectivity
+    dt1 <- subset(MeanClimCon, richness==0)
+    dt1$Mean_cc <- 0
+    dt2 <- subset(MeanClimCon, richness!=0)
+    dt2$Mean_cc <- dt2$ClimCon / dt2$richness
+    dt <- rbind(dt1, dt2)
+    
+    ## rasterize and export
+    rs.sp <- st_as_sf(dt, coords = c('x','y'), crs=4326) %>% 
+      as(., "Spatial") 
+    raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
+      rasterize(rs.sp, ., field='Mean_cc', fun='first') %>% 
+      writeRaster(., paste0('Species_ClimCon_mean/',h,
+                            '/Mean_ClimCon_',h,'_',s,'.tif'), overwrite=T)
+    
+    print(paste0('----Complete: ',h,'-',s,'----'))
+  }
+}
+
 
