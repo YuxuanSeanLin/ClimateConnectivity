@@ -3,7 +3,7 @@ library(dplyr)
 library(raster)
 library(sf)
 
-setwd('D:/LinkageMapper/Statistics')
+setwd('')
 
 for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   for (s in c('ssp126','ssp245','ssp370','ssp585')){
