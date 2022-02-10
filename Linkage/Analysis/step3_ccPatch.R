@@ -94,7 +94,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         }
         
         ## export linkage data by patches (only 2020, for species connectivity)
-        if (yr=2020){
+        if (yr==2020){
           write.csv(route_cc, 
                     paste0('ClimCon/',h,'/',s,'/cclink_2020/cclink_',p,'.csv'), 
                     row.names = F)
@@ -122,7 +122,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
       }
       
       # left-join the connectivity results with patch x-y coordinates
-      if (yr='2020'){
+      if (yr==2020){
         patch <- raster(paste0('patch_id/',h,'/patch_',h,'_present.tif')) %>% 
           as.data.frame(., xy=T) %>% .[complete.cases(.),]
       }else{
@@ -143,4 +143,3 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
     }
   }
 }
-
