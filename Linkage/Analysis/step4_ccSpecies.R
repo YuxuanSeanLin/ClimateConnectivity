@@ -15,28 +15,30 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
   spelist <- list.files(paste0('ClimCon_species/SpeciesDistribution/',h), 
                         full.names = T, recursive = T, pattern = '.tif$')
   
-  for (spe in spelist){
-    ## species data
-    spe_location <- raster(spe)
-    spename <- strsplit(strsplit(spe,'/')[[1]][5],'.tif$')[[1]][1]
+  for (s in c('ssp126','ssp245','ssp370','ssp585')){
+    ### load LCP data
+    LCP_list <- read.csv(paste0('linkage_global/',h,'/',s,'/link_',h,'_',s,'_2020.csv'))
     
-    ## tolerance limits
-    low_end <- edge$lower_sd[which(edge$species==spename)]
-    high_end <- edge$upper_sd[which(edge$species==spename)]
-    
-    ## load patches (only historical distribution)
-    patch <- raster(paste0('patch_id/',h,'/patch_',h,'_present.tif'))
-    
-    ## extract patches by mask
-    spe_bypatch <- mask(patch, spe_location) %>% 
-      as.data.frame(., xy=T) %>% .[complete.cases(.),]
-    colnames(spe_bypatch)[3] <- 'pid'
-    
-    ## calculate patch-wise species climate connectivity of 4 scenarios
-    if (nrow(spe_bypatch)>0){
-      for (s in c('ssp126','ssp245','ssp370','ssp585')){
-        spe_cc <- c() %>% as.data.frame()
-        
+    for (spe in spelist){
+      spe_cc <- c() %>% as.data.frame()
+      
+      ## species data
+      spe_location <- raster(spe)
+      spename <- strsplit(strsplit(spe,'/')[[1]][5],'.tif$')[[1]][1]
+      
+      ## tolerance limits
+      low_end <- edge$lower_sd[which(edge$species==spename)]
+      high_end <- edge$upper_sd[which(edge$species==spename)]
+      
+      ## load patches (only historical distribution)
+      patch <- raster(paste0('patch_id/',h,'/patch_',h,'_present.tif'))
+      
+      ## extract patches by mask
+      spe_bypatch <- mask(patch, spe_location) %>% 
+        as.data.frame(., xy=T) %>% .[complete.cases(.),]
+      colnames(spe_bypatch)[3] <- 'pid'
+      
+      if (nrow(spe_bypatch)>0){
         ### start with different destinations
         for (pch in unique(spe_bypatch$pid)){
           ### extract species within each patch
@@ -69,7 +71,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
             }
           }
           
-          ### calculate connectivity coefficient with cumulative LCP pathways divide cost-weighed distance
+          ### calculate connectivity coefficient with LCP pathways
           dest_fut <- links[,(ncol(links)/2+2):ncol(links)] %>% as.data.frame()
           conn_coef <- c()
           for (r in 1:nrow(dest_fut)){
@@ -98,7 +100,7 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         
         ### export as raster files
         rs.sp <- st_as_sf(spe_cc, coords = c('x','y'), crs=4326) %>% 
-          as(., "Spatial") 
+          as(., "Spatial")
         #### climate connectivity
         raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
           rasterize(rs.sp, ., field='ClimCon', fun='first') %>% 
@@ -119,7 +121,6 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
                      '-',strsplit(spe,'/')[[1]][5],'----'))
       }
     }
-    
   }
 }
 
