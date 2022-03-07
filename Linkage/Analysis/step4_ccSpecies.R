@@ -89,7 +89,9 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
                 cum_LCP <- cum_LCP + LCP_list$LCP_Length[which(LCP_list$Origin==from_p & LCP_list$Dest==to_p)]
               }
               #### calculate coefficiency
-              conn_coef <- append(conn_coef, cum_LCP/cum_CWD)
+              if (cum_CWD==0){
+                conn_coef <- append(conn_coef, 1)
+              }else{conn_coef <- append(conn_coef, cum_LCP/cum_CWD)}
             }
           }
           spe_bp$ConnCoef <- max(conn_coef)
@@ -101,16 +103,6 @@ for (h in c('surface','mesopelagic','bathypelagic','abyssopelagic')){
         ### export as raster files
         rs.sp <- st_as_sf(spe_cc, coords = c('x','y'), crs=4326) %>% 
           as(., "Spatial")
-        #### climate connectivity
-        raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
-          rasterize(rs.sp, ., field='ClimCon', fun='first') %>% 
-          writeRaster(., paste0('ClimCon_species/Species_ClimCon/',s,
-                                strsplit(spe,'SpeciesDistribution')[[1]][2]), overwrite=T)
-        #### climate impacts
-        raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
-          rasterize(rs.sp, ., field='ClimImp', fun='first') %>% 
-          writeRaster(., paste0('ClimCon_species/Species_ClimImp/',s,
-                                strsplit(spe,'SpeciesDistribution')[[1]][2]), overwrite=T)
         #### connectivity coefficient
         raster(crs = crs(rs.sp), vals = 0, resolution = c(1, 1), ext = extent(c(-180, 180, -90, 90))) %>%
           rasterize(rs.sp, ., field='ConnCoef', fun='first') %>% 
