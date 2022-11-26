@@ -2,7 +2,7 @@ library(magrittr)
 library(raster)
 library(sf)
 
-setwd('D:/cmip6')
+setwd('')
 
 # create folders
 dir.create('step1_cmip6_dpmean')
