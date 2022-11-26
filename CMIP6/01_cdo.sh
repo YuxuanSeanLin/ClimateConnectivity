@@ -8,3 +8,4 @@ ofile="<filename>"
 cdo -yearmean -sellonlatbox,-180,180,-90,90 -remapbil,r360×180 -selyear,${yr} ${ifile} ${ofile}
 echo $ofile
 done
+
